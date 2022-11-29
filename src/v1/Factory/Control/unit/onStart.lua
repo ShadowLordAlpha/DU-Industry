@@ -95,19 +95,22 @@ MyCoroutines = {
 
             for _,indy in pairs(industry) do
 
+                local indy_id = indy.indy.getLocalId();
+                local info = json.decode(json.encode(core.getElementIndustryInfoById(indy_id)))
+
                 if indy.broken then
-                    local info = indy.indy.getInfo();
                     local item = prodItems[indy.item_index]
 
-                    system.print("Broken Amount, " .. info.currentProductAmount .. " / " .. item.amt)
+                    system.print("Broken Amount, " .. json.encode(info))
                     if info.currentProductAmount >= item.amt then
+                        system.print("we have enough, mooving on")
                         indy.indy.stop(1, 0)
                     else
                         industryRefresh = system.getUtcTime() + industryRefreshTime
                     end
                 end
 
-                if indy.indy.getState() ~= 2 then
+                if info.state ~= 2 then
 
                     indy.indy.stop(1, 0)
                     coroutine.yield(coroutinesTable[2])
@@ -134,15 +137,16 @@ MyCoroutines = {
 
 
                         --local info = core.getElementIndustryInfoById(indy.indy.getLocalId())
-                        local info = indy.indy.getInfo();
+                        local info = json.decode(json.encode(core.getElementIndustryInfoById(indy_id)))
                         if info.maintainProductAmount ~= item.amt then
                             system.print("Broken Item " .. item.name)
-                            system.print("Broken Amount, maint AMOUNT " .. info.maintainProductAmount)
-                            system.print("Broken Amount, cURRENT AMOUNT " .. info.currentProductAmount)
+                            system.print("Broken data: " .. json.encode(info))
                             indy.indy.stop(1, 0)
 
                             indy.broken = true
                             indy.indy.startRun()
+
+                            industryRefresh = system.getUtcTime() + 10
                         else
                             indy.broken = false
                         end
